@@ -1,0 +1,4 @@
+Use of cutadapt to improve the performance of Swift amplicon kits.
+Two changes in amplivar.pl and requirement that cutadapt is in the path
+`cutadapt -a AGATCGGAAGAGCACACGTCTG -g CAGACGTGTGCTCTTCCGATCT -o $fastq.cut.fastq  $fastq`;
+@file_list = glob "$source_dir/*cut\.fastq";
