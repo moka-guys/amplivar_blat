@@ -584,38 +584,6 @@ fi
 # House-keeping
 if [ $KEEPFILES -eq 1 ]; then
     echo "Keeping all files"
-elif [ $KEEPFILES -eq 2 ]; then
-    echo "Keeping files required for reanalysis from checkpoint 1"
-    rm -r ${ANALYSIS_DIR}/*${FILTER}*/fasta ${ANALYSIS_DIR}/*${FILTER}*/flanked \
-        ${ANALYSIS_DIR}/*${FILTER}*/locus ${ANALYSIS_DIR}/*${FILTER}*/merged \
-        ${ANALYSIS_DIR}/*${FILTER}*/qual_scores ${ANALYSIS_DIR}/*${FILTER}*/seqprep
-    if [ $MODE == "VARIANT_CALLING" ]; then
-	    rm ${ANALYSIS_DIR}/*/*${FILTER}*fna ${ANALYSIS_DIR}/*/*${FILTER}*tsv
-        rm ${ANALYSIS_DIR}/*/*${FILTER}*psrx ${ANALYSIS_DIR}/*/*${FILTER}*pslx \
-            ${ANALYSIS_DIR}/*/*${FILTER}*blat.preinflate.bam
-    fi
-elif [ $KEEPFILES -eq 3 ]; then
-    if [ $MODE == "VARIANT_CALLING" ]; then
-        echo "Keeping only bam, vcf, coverage reports and log files"
-        if [ ! -e ${ANALYSIS_DIR}/COVERAGE ]; then mkdir -p ${ANALYSIS_DIR}/COVERAGE;fi
-        if [ ! -e ${ANALYSIS_DIR}/COVERAGE/RAW ]; then mkdir -p ${ANALYSIS_DIR}/COVERAGE/RAW;fi
-        if [ ! -e ${ANALYSIS_DIR}/BAM ]; then mkdir -p ${ANALYSIS_DIR}/BAM; fi
-        #if [ ! -e ${ANALYSIS_DIR}/VCF ]; then mkdir -p ${ANALYSIS_DIR}/VCF; fi
-
-    fi
-    if [ ! -e ${ANALYSIS_DIR}/LOG ]; then mkdir -p ${ANALYSIS_DIR}/LOG; fi
-    for dir in ${ANALYSIS_SUB_DIRS}; do 
-        if [ $MODE == "VARIANT_CALLING" ]; then
-    	    mv -f ${dir}/*${FILTER}*.bam ${ANALYSIS_DIR}/BAM
-    	    mv -f ${dir}/*${FILTER}*.bam.bai ${ANALYSIS_DIR}/BAM
-		    # mv -f ${dir}/*${FILTER}*.vcf* ${ANALYSIS_DIR}/VCF
-            mv -f ${dir}/*coverage_report.txt ${ANALYSIS_DIR}/COVERAGE 
-            mv -f ${dir}/flanked/${FILTER}*_flanked.txt ${ANALYSIS_DIR}/COVERAGE/RAW
-        fi
-    	mv -f ${dir}/*.log ${ANALYSIS_DIR}/LOG
-    done
-    find ${ANALYSIS_DIR}/*${FILTER}* -maxdepth 0 -type d -not -name METRICS \
-        -not -name BAM -not -name LOG -not -name VCF -not -name COVERAGE -exec rm -r {} \;
 fi
 
 echo "$(tput setaf 1)Finished AmpliVar $MODE $(tput sgr0)"
