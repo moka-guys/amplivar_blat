@@ -459,47 +459,47 @@ function amplivar_blat2bam {
     echo "Convertion done" >>${PREFIX}.log
 }
 export -f amplivar_blat2bam
+# function to use Varscan2 for vaiant calling, not required for DNAnexus app: 07/07/2017
+# function amplivar_call_variant {
+#     echo "Calling variants with VarScan" >>${PREFIX}.log
+#     DIR=`dirname $1`
+#     PREFIX=${DIR}/`basename $1 .blat.bam`
+#     RC=`$SAMTOOLS view ${PREFIX}.blat.bam | head | wc -l`
+#     SAMPLE=`basename $1 .blat.bam`
+#     if [ $RC -gt 0 ]; then
+#         $SAMTOOLS mpileup -f ${FA} -B -d 500000 -q 1 ${PREFIX}.blat.bam 2>>${PREFIX}.log | \
+#         /usr/bin/env java -jar -Xmx8g ${AMPLIDIR}/bin/universal/VarScan.v2.4.3.jar mpileup2cns \
+#             --variants --output-vcf 1 --strand-filter 0 \
+#             --min-var-freq `echo ${MINFREQ} | awk '{print($1/100)}'` \
+#             --min-coverage ${MINCOV} \
+#             --min-reads2 ${MINCOVVAR} \
+#             --p-value 0.05 > ${PREFIX}.blat.varscan.vcf 2>>${PREFIX}.log
+#         # java -Djava.awt.headless=true  -Xmx500m -jar ${AMPLIDIR}/bin/universal/igvtools.jar index ${PREFIX}.blat.varscan.vcf
+#         echo "VarScan DONE" >>${PREFIX}.log
+#         # Add sample name to vcf
+#         sed -i 's/Sample1/'"$SAMPLE"'/' ${PREFIX}.blat.varscan.vcf
 
-function amplivar_call_variant {
-    echo "Calling variants with VarScan" >>${PREFIX}.log
-    DIR=`dirname $1`
-    PREFIX=${DIR}/`basename $1 .blat.bam`
-    RC=`$SAMTOOLS view ${PREFIX}.blat.bam | head | wc -l`
-    SAMPLE=`basename $1 .blat.bam`
-    if [ $RC -gt 0 ]; then
-        $SAMTOOLS mpileup -f ${FA} -B -d 500000 -q 1 ${PREFIX}.blat.bam 2>>${PREFIX}.log | \
-        /usr/bin/env java -jar -Xmx8g ${AMPLIDIR}/bin/universal/VarScan.v2.4.3.jar mpileup2cns \
-            --variants --output-vcf 1 --strand-filter 0 \
-            --min-var-freq `echo ${MINFREQ} | awk '{print($1/100)}'` \
-            --min-coverage ${MINCOV} \
-            --min-reads2 ${MINCOVVAR} \
-            --p-value 0.05 > ${PREFIX}.blat.varscan.vcf 2>>${PREFIX}.log
-        # java -Djava.awt.headless=true  -Xmx500m -jar ${AMPLIDIR}/bin/universal/igvtools.jar index ${PREFIX}.blat.varscan.vcf
-        echo "VarScan DONE" >>${PREFIX}.log
-        # Add sample name to vcf
-        sed -i 's/Sample1/'"$SAMPLE"'/' ${PREFIX}.blat.varscan.vcf
 
-
-    # if Bed file has been supplied generate filter the varscan vcf for variants within the bedfile specified regions
-    if [ ! -z $BEDFILE ] || [ -f BEDFILE ]; then
-        echo "Filtering vcf to regions specified in bed file: $BEDFILE" >>${PREFIX}.log
-        # remove chr prefix from vcf CHROM column (avoids bedtools naming convention error)
-        sed 's/chr//' ${PREFIX}.blat.varscan.vcf > ${PREFIX}.temp.vcf 2>>${PREFIX}.log
-        bedtools intersect -header -a ${PREFIX}.temp.vcf -b ${BEDFILE} > ${PREFIX}.blat.varscan.bedfiltered.vcf 2>>${PREFIX}.log
-        if [ "$?" != 0 ]; then # adds bedfile format inforation to log in the event of an error. 
-            echo "Ensure bed file has no headers and 'chr' is not present in chromsome column." >>${PREFIX}.log
-            echo "See https://genome.ucsc.edu/FAQ/FAQformat.html#format1 for guidance on bed file formats" >>${PREFIX}.log
-        fi
-        rm ${PREFIX}.temp.vcf
-    else
-        echo "No Bedfile supplied, VCF will not be filtered" >>${PREFIX}.log
-    fi 
+#     # if Bed file has been supplied generate filter the varscan vcf for variants within the bedfile specified regions
+#     if [ ! -z $BEDFILE ] || [ -f BEDFILE ]; then
+#         echo "Filtering vcf to regions specified in bed file: $BEDFILE" >>${PREFIX}.log
+#         # remove chr prefix from vcf CHROM column (avoids bedtools naming convention error)
+#         sed 's/chr//' ${PREFIX}.blat.varscan.vcf > ${PREFIX}.temp.vcf 2>>${PREFIX}.log
+#         bedtools intersect -header -a ${PREFIX}.temp.vcf -b ${BEDFILE} > ${PREFIX}.blat.varscan.bedfiltered.vcf 2>>${PREFIX}.log
+#         if [ "$?" != 0 ]; then # adds bedfile format inforation to log in the event of an error. 
+#             echo "Ensure bed file has no headers and 'chr' is not present in chromsome column." >>${PREFIX}.log
+#             echo "See https://genome.ucsc.edu/FAQ/FAQformat.html#format1 for guidance on bed file formats" >>${PREFIX}.log
+#         fi
+#         rm ${PREFIX}.temp.vcf
+#     else
+#         echo "No Bedfile supplied, VCF will not be filtered" >>${PREFIX}.log
+#     fi 
         
-    else
-        echo "Empty BAM file ${PREFIX}.blat.bam. Skipping VarScan"
-    fi
-}
-export -f amplivar_call_variant
+#     else
+#         echo "Empty BAM file ${PREFIX}.blat.bam. Skipping VarScan"
+#     fi
+# }
+# export -f amplivar_call_variant
 #================================= END WRAPPER FUNCTIONS ======================================
 
 echo ""
@@ -561,15 +561,16 @@ if [ $MODE != "GENOTYPING" ]; then
         for dir in $ANALYSIS_SUB_DIRS; do echo "$dir"; done | \
         $PARALLEL -P $THREADS -k "amplivar_blat2bam {}"
     fi
-    if [ $CHKPOINT -le 2 ]; then
-    	BAM_FILES=
-    	for dir in $ANALYSIS_SUB_DIRS; do BAM_FILES="$BAM_FILES `ls $dir/*${FILTER}*.blat.bam`" ; done
-    	FILENUMBER=`echo ${BAM_FILES}  | wc -w`
-    	echo "Processing $FILENUMBER files"
-    	echo "$(tput setaf 3)Calling variants$(tput sgr0)"
-        for f in ${BAM_FILES}; do echo "$f"; done  | \
-        $PARALLEL -P $THREADS -k "amplivar_call_variant {}"
-    fi
+    # calling function for vaiant calling, not required for DNAnexus app: 07/07/2017
+    # if [ $CHKPOINT -le 2 ]; then
+    # 	BAM_FILES=
+    # 	for dir in $ANALYSIS_SUB_DIRS; do BAM_FILES="$BAM_FILES `ls $dir/*${FILTER}*.blat.bam`" ; done
+    # 	FILENUMBER=`echo ${BAM_FILES}  | wc -w`
+    # 	echo "Processing $FILENUMBER files"
+    # 	echo "$(tput setaf 3)Calling variants$(tput sgr0)"
+    #     for f in ${BAM_FILES}; do echo "$f"; done  | \
+    #     $PARALLEL -P $THREADS -k "amplivar_call_variant {}"
+    # fi
 else
     # Genotyping (already done in amplivar.pl)
     echo "$MODE mode, skipping alignment and variant calling."
@@ -599,7 +600,7 @@ elif [ $KEEPFILES -eq 3 ]; then
         if [ ! -e ${ANALYSIS_DIR}/COVERAGE ]; then mkdir -p ${ANALYSIS_DIR}/COVERAGE;fi
         if [ ! -e ${ANALYSIS_DIR}/COVERAGE/RAW ]; then mkdir -p ${ANALYSIS_DIR}/COVERAGE/RAW;fi
         if [ ! -e ${ANALYSIS_DIR}/BAM ]; then mkdir -p ${ANALYSIS_DIR}/BAM; fi
-        if [ ! -e ${ANALYSIS_DIR}/VCF ]; then mkdir -p ${ANALYSIS_DIR}/VCF; fi
+        #if [ ! -e ${ANALYSIS_DIR}/VCF ]; then mkdir -p ${ANALYSIS_DIR}/VCF; fi
 
     fi
     if [ ! -e ${ANALYSIS_DIR}/LOG ]; then mkdir -p ${ANALYSIS_DIR}/LOG; fi
@@ -607,7 +608,7 @@ elif [ $KEEPFILES -eq 3 ]; then
         if [ $MODE == "VARIANT_CALLING" ]; then
     	    mv -f ${dir}/*${FILTER}*.bam ${ANALYSIS_DIR}/BAM
     	    mv -f ${dir}/*${FILTER}*.bam.bai ${ANALYSIS_DIR}/BAM
-		    mv -f ${dir}/*${FILTER}*.vcf* ${ANALYSIS_DIR}/VCF
+		    # mv -f ${dir}/*${FILTER}*.vcf* ${ANALYSIS_DIR}/VCF
             mv -f ${dir}/*coverage_report.txt ${ANALYSIS_DIR}/COVERAGE 
             mv -f ${dir}/flanked/${FILTER}*_flanked.txt ${ANALYSIS_DIR}/COVERAGE/RAW
         fi
