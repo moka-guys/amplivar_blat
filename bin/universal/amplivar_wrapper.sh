@@ -503,10 +503,10 @@ export -f amplivar_blat2bam
 #================================= END WRAPPER FUNCTIONS ======================================
 
 echo ""
-echo "$(tput setaf 1)Started AmpliVar $MODE"
+echo "Started AmpliVar $MODE"
 echo "Version: $VERSION"
 echo "STARTING TIME: [`date`]"
-echo "$(tput setaf 1)Setting program paths "
+echo "Setting program paths "
 echo "SAMTOOLS=$SAMTOOLS"
 echo "SEQPREP=$SEQPREP"
 echo "BAMLEFTALIGN=$BAMLEFTALIGN"
@@ -586,6 +586,6 @@ if [ $KEEPFILES -eq 1 ]; then
     echo "Keeping all files"
 fi
 
-echo "$(tput setaf 1)Finished AmpliVar $MODE "
+echo "Finished AmpliVar $MODE "
 echo "END TIME: [`date`]"
 
