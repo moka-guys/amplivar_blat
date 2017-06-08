@@ -504,9 +504,9 @@ export -f amplivar_blat2bam
 
 echo ""
 echo "$(tput setaf 1)Started AmpliVar $MODE"
-echo "Version: $VERSION$(tput sgr0)"
+echo "Version: $VERSION"
 echo "STARTING TIME: [`date`]"
-echo "$(tput setaf 1)Setting program paths $(tput sgr0)"
+echo "$(tput setaf 1)Setting program paths "
 echo "SAMTOOLS=$SAMTOOLS"
 echo "SEQPREP=$SEQPREP"
 echo "BAMLEFTALIGN=$BAMLEFTALIGN"
@@ -520,17 +520,17 @@ ANALYSIS_SUB_DIRS=
 # SeqPrep + Amplivar stage
 if [ $CHKPOINT -lt 1 ]; then
     FASTQFILES=`ls ${INPUT_DIR}/*${FILTER}*.fastq.gz`
-    echo "$(tput setaf 3)Processing FASTQ files:$(tput sgr0)"
+    echo "Processing FASTQ files:"
     echo "$FASTQFILES"
-    echo "$(tput setaf 3)Creating symbolic links$(tput sgr0)"
+    echo "Creating symbolic links"
     for f in `find ${INPUT_DIR}/ -maxdepth 1 -name "*${FILTER}*_R1*.fastq.gz" -not -name "Undetermined*"`; do
         echo "$f ${INPUT_DIR} ${ANALYSIS_DIR}"; done | \
     $PARALLEL -P $THREADS --colsep ' ' -k "create_symbolic_links {1} {2} {3}"
     ANALYSIS_SUB_DIRS=`find ${ANALYSIS_DIR}/*${FILTER}* -maxdepth 0 -type d -not -name VCF -not -name LOG -not -name BAM`
-    echo "$(tput setaf 3)Running SeqPrep$(tput sgr0)"
+    echo "Running SeqPrep"
     for dir in $ANALYSIS_SUB_DIRS; do echo "$dir"; done | \
     $PARALLEL -P $THREADS -k "seqprep {}"
-    echo "$(tput setaf 3)Running AmpliVar$(tput sgr0)"
+    echo "Running AmpliVar"
     for dir in $ANALYSIS_SUB_DIRS; do echo "$dir"; done | \
     $PARALLEL -P $THREADS -k "amplivar {}"
 fi
@@ -557,7 +557,7 @@ if [ $MODE != "GENOTYPING" ]; then
 
    	    FILENUMBER=`ls ${ANALYSIS_DIR}/*${FILTER}*/grouped/*${FILTER}*grp  | wc -l`
     	echo "Processing $FILENUMBER files"
-    	echo "$(tput setaf 3)Running BLAT alignment$(tput sgr0)"
+    	echo "Running BLAT alignment"
         for dir in $ANALYSIS_SUB_DIRS; do echo "$dir"; done | \
         $PARALLEL -P $THREADS -k "amplivar_blat2bam {}"
     fi
@@ -567,7 +567,7 @@ if [ $MODE != "GENOTYPING" ]; then
     # 	for dir in $ANALYSIS_SUB_DIRS; do BAM_FILES="$BAM_FILES `ls $dir/*${FILTER}*.blat.bam`" ; done
     # 	FILENUMBER=`echo ${BAM_FILES}  | wc -w`
     # 	echo "Processing $FILENUMBER files"
-    # 	echo "$(tput setaf 3)Calling variants$(tput sgr0)"
+    # 	echo "Calling variants"
     #     for f in ${BAM_FILES}; do echo "$f"; done  | \
     #     $PARALLEL -P $THREADS -k "amplivar_call_variant {}"
     # fi
@@ -577,7 +577,7 @@ else
 fi
 # run coverage report generation when in variant calling mode
 if [ $MODE == "VARIANT_CALLING" ]; then
-    echo "$(tput setaf 3)Generating coverage reports$(tput sgr0)"
+    echo "Generating coverage reports"
     python ${AMPLIDIR}/bin/universal/Coverage_rpt.py -o $ANALYSIS_DIR -a $AMPLIDIR
 fi
 
@@ -586,6 +586,6 @@ if [ $KEEPFILES -eq 1 ]; then
     echo "Keeping all files"
 fi
 
-echo "$(tput setaf 1)Finished AmpliVar $MODE $(tput sgr0)"
+echo "$(tput setaf 1)Finished AmpliVar $MODE "
 echo "END TIME: [`date`]"
 
