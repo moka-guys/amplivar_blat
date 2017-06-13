@@ -575,11 +575,13 @@ else
     # Genotyping (already done in amplivar.pl)
     echo "$MODE mode, skipping alignment and variant calling."
 fi
+
+# coverage rpt function removed to become seperate app 08/08/17
 # run coverage report generation when in variant calling mode
-if [ $MODE == "VARIANT_CALLING" ]; then
-    echo "Generating coverage reports"
-    python ${AMPLIDIR}/bin/universal/Coverage_rpt.py -o $ANALYSIS_DIR -a $AMPLIDIR
-fi
+# if [ $MODE == "VARIANT_CALLING" ]; then
+#     echo "Generating coverage reports"
+#     python ${AMPLIDIR}/bin/universal/Coverage_rpt.py -o $ANALYSIS_DIR -a $AMPLIDIR
+# fi
 
 # House-keeping
 if [ $KEEPFILES -eq 1 ]; then
