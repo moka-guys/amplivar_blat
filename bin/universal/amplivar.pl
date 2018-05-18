@@ -685,7 +685,7 @@ for $dna_filename(@file_list) # loop through @file_list
 		$name = $line[2] ;
 		$codon = $line[1] ;
 		$gene = $line[0] ;
-		$name = "$gene_"."$codon_"."$name" ;
+		$name = join "_", $gene,$codon,$name ;
 		$revcomp = reverse $read ;
 		$revcomp =~ tr/ACGTacgt\[\]\.\*/TGCAtgca\]\[\*\./ ;
 		@unmatchedfasta = grep (!/$read/i,@unmatchedfasta) ; #remove matches 
@@ -904,7 +904,7 @@ for $dna_filename(@file_list) # loop through file list;
 		$name = $line[2] ;
 		$codon = $line[1] ;
 		$gene = $line[0] ;
-		$name = "$gene_"."$codon_"."$name" ;
+		$name = join "_", $gene,$codon,$name ;
 		$revcomp = reverse $read ;
 		$revcomp =~ tr/ACGTacgt\[\]\.\*\(\)/TGCAtgca\]\[\*\.\)\(/ ;
 		@unmatchedfasta = grep (!/$read/i,@unmatchedfasta) ; #remove matches 
